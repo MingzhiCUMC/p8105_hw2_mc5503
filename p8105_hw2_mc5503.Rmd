@@ -1,0 +1,66 @@
+---
+title: "p8105_hw2_mc5503.Rmd"
+author: "mc5503"
+date: '2023-10-01'
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(readxl)
+```
+# Problem 1
+## tidy pols data
+```{r}
+pols=read_csv("data/fivethirtyeight_datasets/pols-month.csv")|>
+  separate(mon,into = c("year","month_num","day"),convert = TRUE)|>
+  mutate(month=month.name[month_num])|>
+  mutate(president=recode(prez_gop,"0"="dem","1"="gop"))|>
+  select(year,month,everything(),-day,-prez_gop,-prez_dem,-month_num)
+```
+## tidy snp data
+```{r}
+snp=read_csv("data/fivethirtyeight_datasets/snp.csv") |>
+  separate(date, into = c("month", "day", "year"), convert = TRUE) |>
+  mutate(year=ifelse(year>=50,1900+year,2000+year))|>
+  arrange(year, month) |>
+  mutate(month = month.name[month]) |>
+  select(year, month, close) 
+```
+## tidy unemployment data
+```{r}
+month_df = 
+  tibble(
+    month_num = 1:12,
+    month_abbr = month.abb,
+    month = month.name
+  )
+
+unemployment = 
+  read_csv("data/fivethirtyeight_datasets/unemployment.csv") |>
+  rename(year = Year) |>
+  pivot_longer(
+    Jan:Dec,
+    names_to="month_abbr",
+    values_to ="unemployment"
+  )|>
+  left_join(x=_,y=month_df)|>
+  select(year,month,unemployment)
+```
+## merge all the datasets
+```{r}
+data_538=
+  left_join(pols,snp)|>
+  left_join(x=_,y=unemployment)
+
+data_538
+str(data_538)
+```
+The `pols` dataset has `r nrow(pols)` observations and `r ncol(pols)` variables. It contains information about the party affiliation distribution from years `r range(pols$year)[1]` to `r range(pols$year)[2]`.
+The `snp` data has `r nrow(snp)` observations and `r ncol(snp)` variables, ranging from years `r range(snp$year)[1]` to `r range(snp$year)[2]`.
+The `unemployment` data has `r nrow(unemployment)` observations and `r ncol(unemployment)` variables ranging from years `r range(unemployment$year)[1]` to `r range(unemployment$year)[2]`.
+When a democrat was president, the average unemployment rate was `r filter(data_538, month == "January", year >= 1975, president == "dem") |> pull(unemployment) |> mean() |> round(2)`. While for republician, the average unemployment rate was `r filter(data_538, month == "January", year >= 1975, president == "gop") |> pull(unemployment) |> mean() |> round(2)`.
