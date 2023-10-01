@@ -85,14 +85,6 @@ pro_tw=read_excel(
   mutate(homes_powered=round(weight_tons*500/30))|>
   mutate(trash_wheel_name="Professor Trash Wheel")
 
-#cap_tw=read_excel(
-#  "data/202207 Trash Wheel Collection Data.xlsx",
-#  sheet = "Captain Trash Wheel",
-#  range = "A2:K27")|>
-#  janitor::clean_names()|>
-#  mutate(homes_powered=round(weight_tons*500/30))|>
-#  mutate(trash_wheel_name="Captain Trash Wheel")
-
 gwy_tw=read_excel(
   "data/202207 Trash Wheel Collection Data.xlsx",
   sheet = "Gwynnda Trash Wheel",
