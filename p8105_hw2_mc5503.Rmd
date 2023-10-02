@@ -108,3 +108,40 @@ There are `r max(pro_tw$dumpster)` dumpsters used by Professor Trash Wheel range
 The `tw_tidy` dataset contains information of all the dumspters used by the three wheels.
 
 Total weight of trash collected by Professor Trash Wheel is `r sum(mr_tw$weight_tons)` tons. The total number of cigarette butts collected by Gwynnda in July of 2021 is `r filter(gwy_tw, month %in% c("july","July"),year == 2021) |> pull(cigarette_butts) |> sum()`.
+
+# problem 4
+## import and tidy the dataset of baseline demographics
+```{r}
+mci_baseline=read_csv("data/data_mci/MCI_baseline.csv",skip = 1)|>
+  janitor::clean_names()|>
+  mutate(sex=recode(sex,"0"="female","1"="male"))|>
+  mutate(apoe4=recode(apoe4,"1"="carrier","0"="non-carrier"))|>
+  filter(age_at_onset>current_age|age_at_onset==".")
+```
+Using mutate to replace 0 and 1 to character variable, then using filter to delete the participant who develop mci at or before the baseline.
+
+There are total `r max(mci_baseline$id)` participants in the study and `r nrow(mci_baseline)` participants were eligible. `r sum(mci_baseline$age_at_onset>0)` participants developed MCI. The average baseline age is `r mean(mci_baseline$current_age)`. The proportion of women in the study who are APOE4 carriers is `r nrow(filter(mci_baseline,sex=="female",apoe4=="carrier"))/nrow(filter(mci_baseline,sex=="female"))`.
+
+## import and tidy the dataset of longitudinally observed biomarker values
+```{r}
+mci_amyloid=read_csv("data/data_mci/mci_amyloid.csv",skip=1)|>
+  janitor::clean_names()|>
+  rename("id"="study_id")
+```
+Use rename to change study_id to id, which maps the mci_baseline data.There are total `r nrow(mci_amyloid$id)` participants in the study.
+
+## combine two datasets
+```{r}
+anti_join(mci_baseline,mci_amyloid,by="id")
+anti_join(mci_amyloid,mci_baseline,by="id")
+mci_data=inner_join(mci_baseline,mci_amyloid,by="id")
+```
+There are `r nrow(anti_join(mci_baseline,mci_amyloid,by="id"))` participants appear only in the baseline dataset (after deleting the ineligible participant) and `r nrow(anti_join(mci_amyloid,mci_baseline,by="id"))` participants (including the ineligible people in the baseline dataset) appear only in amyloid dataset.
+
+After combining two datasets, there are `r nrow(mci_data)` participants in both study, including `r nrow(filter(mci_data,apoe4=="carrier"))` apoe4 carriers. There are `r nrow(filter(mci_data,sex=="female"))` female in total.
+
+## export the mci_data
+```{r}
+write_csv(mci_data,"data/data_mci/mci_data.csv")
+```
+
