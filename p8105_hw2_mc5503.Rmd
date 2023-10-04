@@ -122,7 +122,7 @@ mci_baseline=read_csv("data/data_mci/MCI_baseline.csv",skip = 1)|>
   mutate(apoe4=recode(apoe4,"1"="carrier","0"="non-carrier"))|>
   filter(age_at_onset>current_age|age_at_onset==".")
 ```
-Using mutate to replace 0 and 1 to character variable, then using filter to delete the participant who develop mci at or before the baseline.
+Using `mutate` to replace 0 and 1 to character variable, then using `filter` to delete the participant who develop mci at or before the baseline.
 
 There are total `r max(mci_baseline$id)` participants in the study and `r nrow(mci_baseline)` participants were eligible. `r sum(mci_baseline$age_at_onset>0)` participants developed MCI. The average baseline age is `r mean(mci_baseline$current_age)`. The proportion of women in the study who are APOE4 carriers is `r nrow(filter(mci_baseline,sex=="female",apoe4=="carrier"))/nrow(filter(mci_baseline,sex=="female"))`.
 
@@ -132,13 +132,24 @@ mci_amyloid=read_csv("data/data_mci/mci_amyloid.csv",skip=1)|>
   janitor::clean_names()|>
   rename("id"="study_id")
 ```
-Use rename to change study_id to id, which maps the mci_baseline data.There are total `r nrow(mci_amyloid$id)` participants in the study.
+```{r}
+mci_amyloid_pivot=pivot_longer(
+  mci_amyloid,
+  time_2:time_8,
+  names_to = "time",
+  values_to = "amyloid_ratio")|>
+  drop_na()|>
+  mutate(time=recode(time,"time_2"="2 years","time_4"="4 years","time_6"="6 years","time_8"="8 years"))
+```
+
+Use `rename` to change study_id to id, which maps the `mci_baseline` data. Use `pivot_longer` to make the data more tidy and `drop_na` to delete the missing values in amyloid ratio.There are total `r nrow(mci_amyloid)` participants and `r nrow(mci_amyloid_pivot)` records about amyloid ratio in the study .
 
 ## combine two datasets
 ```{r}
 anti_join(mci_baseline,mci_amyloid,by="id")
 anti_join(mci_amyloid,mci_baseline,by="id")
 mci_data=inner_join(mci_baseline,mci_amyloid,by="id")
+str(mci_data)
 ```
 There are `r nrow(anti_join(mci_baseline,mci_amyloid,by="id"))` participants appear only in the baseline dataset (after deleting the ineligible participant) and `r nrow(anti_join(mci_amyloid,mci_baseline,by="id"))` participants (including the ineligible people in the baseline dataset) appear only in amyloid dataset.
 
