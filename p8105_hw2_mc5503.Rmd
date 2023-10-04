@@ -111,7 +111,7 @@ There are `r max(pro_tw$dumpster)` dumpsters used by Professor Trash Wheel range
 
 The `tw_tidy` dataset contains information of all the dumspters used by the three wheels.
 
-Total weight of trash collected by Professor Trash Wheel is `r sum(mr_tw$weight_tons)` tons. The total number of cigarette butts collected by Gwynnda in July of 2021 is `r filter(gwy_tw, month %in% c("july","July"),year == 2021) |> pull(cigarette_butts) |> sum()`.
+Total weight of trash collected by Professor Trash Wheel is `r sum(pro_tw$weight_tons)` tons. The total number of cigarette butts collected by Gwynnda in July of 2021 is `r filter(gwy_tw, month %in% c("july","July"),year == 2021) |> pull(cigarette_butts) |> sum()`.
 
 # Problem 3
 ## import and tidy the dataset of baseline demographics
