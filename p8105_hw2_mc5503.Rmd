@@ -69,27 +69,31 @@ When a democrat was president, the average unemployment rate was `r filter(data_
 ## import and clean the datasets
 ```{r}
 mr_tw=read_excel(
-  "data/202207 Trash Wheel Collection Data.xlsx",
+  "data/202309 Trash Wheel Collection Data.xlsx",
    sheet = "Mr. Trash Wheel",
-   range= "A2:N549")|>
+  .name_repair = "unique_quiet")|>
   janitor::clean_names()|>
+  select(-starts_with("x"))|>
+  filter(dumpster!="NA")|>
   mutate(homes_powered=round(weight_tons*500/30))|>
   mutate(trash_wheel_name="Mr. Trash Wheel")|>
   mutate(year=as.numeric(year))
   
 pro_tw=read_excel(
-  "data/202207 Trash Wheel Collection Data.xlsx",
-  sheet = "Professor Trash Wheel",
-  range = "A2:M96")|>
+  "data/202309 Trash Wheel Collection Data.xlsx",
+  sheet = "Professor Trash Wheel")|>
   janitor::clean_names()|>
+  select(-starts_with("x"))|>
+  filter(dumpster!="NA")|>
   mutate(homes_powered=round(weight_tons*500/30))|>
   mutate(trash_wheel_name="Professor Trash Wheel")
 
 gwy_tw=read_excel(
-  "data/202207 Trash Wheel Collection Data.xlsx",
-  sheet = "Gwynnda Trash Wheel",
-  range = "A2:K108")|>
+  "data/202309 Trash Wheel Collection Data.xlsx",
+  sheet = "Gwynnda Trash Wheel")|>
   janitor::clean_names()|>
+  select(-starts_with("x"))|>
+  filter(dumpster!="NA")|>
   mutate(homes_powered=round(weight_tons*500/30))|>
   mutate(trash_wheel_name="Gwynnda Trash Wheel")
 ```
@@ -109,7 +113,7 @@ The `tw_tidy` dataset contains information of all the dumspters used by the thre
 
 Total weight of trash collected by Professor Trash Wheel is `r sum(mr_tw$weight_tons)` tons. The total number of cigarette butts collected by Gwynnda in July of 2021 is `r filter(gwy_tw, month %in% c("july","July"),year == 2021) |> pull(cigarette_butts) |> sum()`.
 
-# problem 4
+# Problem 3
 ## import and tidy the dataset of baseline demographics
 ```{r}
 mci_baseline=read_csv("data/data_mci/MCI_baseline.csv",skip = 1)|>
